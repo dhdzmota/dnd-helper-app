@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-single
+tests/screenshots
+*.local
+tsconfig.tsbuildinfo
+dist-apk
+android/build
+
+# El APK y el zip se generan; no hace falta versionarlos.
+ficha-dnd-*.apk
+ficha-dnd-web.zip
+ficha-dnd.html

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+    <title>Âreen Velthar</title>
+    <meta name="description" content="Compañero de campaña para Âreen Velthar, paladín dracónico del Juramento de Devoción." />
+    <meta name="theme-color" content="#08090A" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Ficha D&amp;D" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <!-- Pantallas de arranque de iOS. Las genera scripts/build-ios-splash.mjs. -->
+    <link rel="apple-touch-startup-image" href="./splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="./splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="icon" type="image/png" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Si el WebView del teléfono es demasiado viejo, la app no arrancaría y se
+      // vería una pantalla negra. Mejor decirlo, y decir cómo arreglarlo.
+      (function () {
+        var falta = []
+        if (!window.indexedDB) falta.push('almacenamiento de datos')
+        if (!window.createImageBitmap) falta.push('procesado de imágenes')
+        if (!Object.fromEntries) falta.push('JavaScript moderno')
+        if (!window.CSS || !CSS.supports('aspect-ratio', '1')) falta.push('CSS moderno')
+        if (!falta.length) return
+        // Marcar para que main.tsx no monte encima de este mensaje.
+        window.__navegadorIncompatible = true
+        document.getElementById('root').innerHTML =
+          '<div style="padding:32px 24px;font-family:Georgia,serif;color:#E9E2D4;line-height:1.6">' +
+          '<h1 style="font-size:1.4rem;margin:0 0 14px;color:#C9A46A">El navegador de este teléfono es muy antiguo</h1>' +
+          '<p style="margin:0 0 12px">La app necesita ' + falta.join(', ') + ', y aquí no está disponible.</p>' +
+          '<p style="margin:0 0 12px">Abre la Play Store y actualiza <b>Android System WebView</b> y <b>Chrome</b>. ' +
+          'Suele bastar con eso: no hace falta cambiar de teléfono.</p>' +
+          '<p style="margin:0;color:#8C8377;font-size:.9rem">Tus datos no se han tocado.</p></div>'
+      })()
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

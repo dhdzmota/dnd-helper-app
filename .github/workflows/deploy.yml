@@ -1,0 +1,54 @@
+# Publica la app en GitHub Pages cada vez que subes cambios a main.
+# La URL queda en https://<tu-usuario>.github.io/<nombre-del-repo>/
+name: Publicar la app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si subes dos veces seguidas, que gane la última y no se pisen.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Si las reglas de 5e se rompen, no se publica nada.
+      - name: Comprobar las reglas
+        run: npm run check
+
+      - run: npm run build
+
+      # GitHub Pages ignora por defecto lo que empieza por guion bajo.
+      - run: touch dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

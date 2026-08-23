@@ -1,0 +1,4 @@
+# La clave de firma y el APK son binarios: que git no los toque.
+*.keystore binary
+*.apk binary
+*.woff2 binary

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- La copia de seguridad de Android se lleva los datos del WebView:
+     ficha, diario y galería viajan si el usuario restaura el teléfono. -->
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="file" path="." />
+    <include domain="sharedpref" path="." />
+</full-backup-content>
