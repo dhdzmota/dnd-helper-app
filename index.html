@@ -33,7 +33,7 @@
       (function () {
         var falta = []
         if (!window.indexedDB) falta.push('almacenamiento de datos')
-        if (!window.createImageBitmap) falta.push('procesado de imágenes')
+        // createImageBitmap ya no se exige: la galería sabe apañarse con <img>.
         if (!Object.fromEntries) falta.push('JavaScript moderno')
         if (!window.CSS || !CSS.supports('aspect-ratio', '1')) falta.push('CSS moderno')
         if (!falta.length) return

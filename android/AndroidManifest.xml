@@ -22,10 +22,13 @@
         android:hardwareAccelerated="true"
         android:supportsRtl="false">
 
+        <!-- launchMode singleTop y no singleTask: con singleTask,
+             startActivityForResult puede devolver cancelado al instante y el
+             selector de imágenes no entregaría nunca nada. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|density|fontScale"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/AppTheme">

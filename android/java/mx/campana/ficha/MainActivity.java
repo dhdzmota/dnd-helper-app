@@ -72,7 +72,8 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);            // almacén interno del WebView
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setAllowFileAccess(false);           // no hace falta: todo va por assets
-        s.setAllowContentAccess(false);
+        // El selector de imágenes devuelve URIs content://, así que este sí hace falta.
+        s.setAllowContentAccess(true);
         s.setSupportZoom(false);
         s.setTextZoom(100);                    // el tamaño lo decide la app, no el sistema
 
@@ -107,9 +108,20 @@ public class MainActivity extends Activity {
                     startActivityForResult(params.createIntent(), PEDIR_ARCHIVO);
                     return true;
                 } catch (Exception e) {
-                    selectorArchivos = null;
-                    aviso("No se pudo abrir el selector de archivos.");
-                    return false;
+                    // Algunos teléfonos no resuelven el intent que arma el WebView.
+                    // Un ACTION_GET_CONTENT normal casi siempre sí.
+                    try {
+                        Intent alterno = new Intent(Intent.ACTION_GET_CONTENT);
+                        alterno.setType("image/*");
+                        alterno.addCategory(Intent.CATEGORY_OPENABLE);
+                        alterno.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        startActivityForResult(Intent.createChooser(alterno, "Elegir imágenes"), PEDIR_ARCHIVO);
+                        return true;
+                    } catch (Exception e2) {
+                        selectorArchivos = null;
+                        aviso("Este teléfono no tiene ninguna app para elegir imágenes.");
+                        return false;
+                    }
                 }
             }
         });

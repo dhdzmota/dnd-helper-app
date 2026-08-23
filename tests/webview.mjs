@@ -91,6 +91,28 @@ check('con nombre y tipo correctos', g[0]?.mime === 'application/json' && /\.jso
 check('y contenido real dentro', (g[0]?.bytes ?? 0) > 500)
 check('avisa de dónde quedó', has(await datos.innerText(), 'Guardado en Descargas'))
 
+console.log('\nLa galería, bajo las condiciones del contenedor')
+await p.goto(`${URL_APP}?g=1#journal`, { waitUntil: 'networkidle' })
+await p.waitForTimeout(900)
+await p.getByRole('button', { name: /^Galería/ }).click()
+await p.waitForTimeout(400)
+const galeria = p.locator('.plate').filter({ has: p.locator('.eyebrow', { hasText: 'Galería' }) })
+check('el almacén de imágenes está disponible', !has(await galeria.innerText(), 'no se pueden guardar'))
+const entrada = p.locator('input[type=file][accept="image/*"]')
+check('hay un selector de imágenes', await entrada.count() === 1)
+check('acepta varias a la vez', await entrada.getAttribute('multiple') !== null)
+await entrada.setInputFiles(['src/assets/sigil.png', 'references/portrait-limpio.png'])
+await p.waitForTimeout(3500)
+check('las imágenes se guardan', await p.locator('.shot-img img').count() === 2,
+  await galeria.innerText().then((t) => t.slice(0, 120)))
+check('y se ven de verdad', await p.evaluate(() =>
+  [...document.querySelectorAll('.shot-img img')].every((i) => i.naturalWidth > 0)))
+await p.reload({ waitUntil: 'networkidle' })
+await p.waitForTimeout(2000)
+await p.getByRole('button', { name: /^Galería/ }).click()
+await p.waitForTimeout(1500)
+check('siguen ahí tras reabrir', await p.locator('.shot-img img').count() === 2)
+
 console.log('\nUn WebView viejo recibe una explicación, no una pantalla negra')
 const viejo = await b.newContext({ viewport: { width: 390, height: 844 } })
 const v = await viejo.newPage()

@@ -246,16 +246,29 @@ function Galeria() {
 
   const subir = async (files: FileList) => {
     setAviso(null)
-    const imagenes = [...files].filter((f) => f.type.startsWith('image/'))
-    if (imagenes.length === 0) { setAviso('Eso no era una imagen.'); return }
-    setSubiendo(imagenes.length)
-    let fallos = 0
-    for (const f of imagenes) {
-      const ok = await j.addPhoto(f)
-      if (!ok) fallos++
-      setSubiendo((n) => n - 1)
+    // Sin filtrar por tipo: algunos selectores de Android entregan el archivo sin
+    // tipo MIME, y descartarlo aquí dejaría fuera fotos perfectamente válidas.
+    const elegidas = [...files]
+    if (elegidas.length === 0) return
+
+    setSubiendo(elegidas.length)
+    const fallos: string[] = []
+    try {
+      for (const f of elegidas) {
+        const r = await j.addPhoto(f)
+        if (!r.ok) fallos.push(`${f.name || 'una imagen'}: ${r.motivo}`)
+        setSubiendo((n) => n - 1)
+      }
+    } finally {
+      // Pase lo que pase, el botón vuelve a estar disponible.
+      setSubiendo(0)
     }
-    if (fallos) setAviso(`No se pudieron guardar ${fallos} de ${imagenes.length}. Puede que no quede espacio en el teléfono.`)
+
+    if (fallos.length) {
+      setAviso(fallos.length === elegidas.length
+        ? `No se pudo guardar ninguna. ${fallos[0]}`
+        : `Se guardaron ${elegidas.length - fallos.length} de ${elegidas.length}. ${fallos[0]}`)
+    }
   }
 
   const totalMB = j.photos.reduce((n, p) => n + p.size, 0) / 1024 / 1024
