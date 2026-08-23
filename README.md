@@ -23,8 +23,9 @@ npm test             # la suite completa
 Las suites por separado: `check` (reglas de 5e), `test:ui` (flujos), `test:classes`
 (las cuatro clases), `test:hp` (los puntos de golpe al editar la ficha), `test:journal`
 (notas, bitácora, galería y restauración en un dispositivo limpio), `test:responsive`,
-`test:transfer`, `test:offline` (sin señal), `test:standalone` (el archivo suelto
-abierto desde `file://`) y `test:artifact`. Las de navegador levantan
+`test:transfer`, `test:offline` (sin señal), `test:standalone` (el archivo suelto abierto
+desde `file://`), `test:webview` (las condiciones del APK), `test:ios` (compartir y aviso
+de Safari), `test:pages` (servida desde un subdirectorio) y `test:artifact`. Las de navegador levantan
 la preview solas, pero necesitan un `npm run build` previo. `npm run party` regenera las
 capturas de los personajes de la mesa.
 
@@ -33,6 +34,39 @@ capturas de los personajes de la mesa.
 `npm run build:guide` graba una creación de personaje completa desde la interfaz real
 (`tests/walkthrough.mjs`) y monta con esas capturas una página de instalación y primeros
 pasos, lista para publicar y mandar a los demás jugadores.
+
+## Publicarla para iPhone (y para quien prefiera el navegador)
+
+En iOS **no se puede instalar un archivo**: Apple no lo permite sin pasar por su
+programa de desarrollo, que cuesta 99 dólares al año y exige un Mac. La vía que sí
+funciona, y gratis, es la PWA añadida a la pantalla de inicio desde Safari, que necesita
+una dirección web.
+
+`.github/workflows/deploy.yml` publica en GitHub Pages en cada push a `main`. Antes de
+publicar corre `npm run check`: si las reglas de 5e se rompen, no sale nada.
+
+Puesta en marcha, una sola vez:
+
+1. Crea un repositorio en GitHub y súbelo:
+   `git remote add origin <url>` · `git branch -M main` · `git push -u origin main`
+2. En el repo: **Settings → Pages → Source: GitHub Actions**
+3. La URL queda en `https://<tu-usuario>.github.io/<repo>/`
+
+A partir de ahí, cada `git push` republica. `npm run test:pages` comprueba que todo
+funciona servido desde un subdirectorio, que es como Pages sirve los proyectos, y que
+sigue abriendo sin conexión.
+
+**Lo que iOS necesita y ya está puesto:** meta de pantalla completa, título e ícono
+propios, diez pantallas de arranque por modelo de iPhone —para que no haya destello
+blanco— y, sobre todo, dos cosas que en iOS no son opcionales:
+
+- Una descarga con `a.download` **no hace nada** desde la pantalla de inicio, así que la
+  copia de seguridad sale por la hoja de compartir del sistema (`navigator.share`).
+- Safari borra el almacenamiento de una web tras siete días sin abrirla, pero **las apps
+  añadidas a la pantalla de inicio están exentas**. Si detecta que estás en Safari sin
+  instalar, la app lo dice y explica qué tocar.
+
+`npm run test:ios` cubre las dos cosas.
 
 ## La app de Android
 
@@ -73,7 +107,15 @@ puede ejecutar sin un dispositivo.
 
 ## Llevarla al celular
 
-Hay dos caminos, y el primero no necesita ni servidor ni cuenta:
+Tres caminos, todos desde el mismo código:
+
+| | Android | iPhone |
+|---|---|---|
+| **Recomendado** | APK (`npm run apk`) | PWA desde GitHub Pages |
+| **Dónde viven los datos** | Almacén privado del paquete | Almacén del origen, exento de borrado si está instalada |
+| **Actualizar** | Pasarles el APK nuevo | `git push`: les llega sola |
+
+Y además, sin servidor ni cuenta:
 
 ```bash
 npm run build:single    # dist-single/ficha-dnd.html — un archivo, ~700 KB
