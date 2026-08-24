@@ -73,6 +73,17 @@ echo "▸ Generando dex"
 echo "▸ Empaquetando"
 ( cd "$OUT" && zip -q base.apk classes.dex )
 
+if [ ! -f "$KEYSTORE" ] && [ "$VERSION_CODE" -gt 1 ]; then
+  echo "✗ No está $KEYSTORE, pero ya hay versiones publicadas (código $((VERSION_CODE - 1)))."
+  echo
+  echo "  Si se firma con una clave nueva, Android rechazará la actualización y tus"
+  echo "  jugadores tendrían que desinstalar, perdiendo sus datos."
+  echo
+  echo "  Recupera el archivo de tu copia de seguridad y ponlo en $KEYSTORE."
+  echo "  Si de verdad quieres empezar de cero, pon versionCode a 0 en $VERSION_FILE."
+  exit 1
+fi
+
 if [ ! -f "$KEYSTORE" ]; then
   echo "▸ Creando la clave de firma (guárdala: sin ella no puedes publicar actualizaciones)"
   keytool -genkeypair -v -keystore "$KEYSTORE" -alias "$ALIAS" \

@@ -4,7 +4,8 @@ name: Publicar la app
 
 on:
   push:
-    branches: [main]
+    # Las dos, para que no se quede sin publicar por llamarse la rama de otra forma.
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
