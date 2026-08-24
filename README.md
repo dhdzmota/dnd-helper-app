@@ -84,10 +84,17 @@ salen a Descargas vía `MediaStore`, ambas cosas sin permisos en Android moderno
 `android:allowBackup` está activado, así que la copia de seguridad de Google se lleva
 la ficha, el diario y la galería si el usuario restaura el teléfono.
 
-**La clave de firma vive en `android/ficha.keystore` y no se puede perder.** Android
-solo instala una actualización encima si viene firmada con la misma clave; sin ella,
-tus jugadores tendrían que desinstalar, y ahí sí perderían los datos. Por eso el archivo
-se queda en el proyecto y no está en `.gitignore`.
+**La clave de firma vive en `android/ficha.keystore`, no se puede perder, y no se
+versiona.** Android solo instala una actualización encima si viene firmada con la misma
+clave; sin ella, tus jugadores tendrían que desinstalar, y ahí sí perderían los datos.
+
+Está en `.gitignore` a propósito: GitHub Pages en cuentas gratuitas obliga a que el
+repositorio sea público, y con esa clave cualquiera podría firmar una actualización
+falsa que se instalaría encima de la app de tus jugadores. Guárdala aparte —en Drive,
+en un gestor de contraseñas, donde sea— y no la subas.
+
+Si falta la clave pero ya hay versiones publicadas, `npm run apk` **se detiene** en vez
+de generar una nueva: firmar con otra clave rompería las actualizaciones en silencio.
 
 **Actualizaciones.** `versionCode` sube solo en cada build, que es lo que Android exige
 para aceptar una instalación encima. `versionName` lo pones tú en `android/version.json`.
