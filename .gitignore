@@ -11,3 +11,8 @@ android/build
 ficha-dnd-*.apk
 ficha-dnd-web.zip
 ficha-dnd.html
+
+# La clave de firma NO va al repositorio: GitHub Pages gratis obliga a que sea
+# público, y con la clave cualquiera podría firmar una actualización falsa.
+# Guárdala fuera, y sin perderla: sin ella no puedes actualizar la app.
+android/*.keystore
