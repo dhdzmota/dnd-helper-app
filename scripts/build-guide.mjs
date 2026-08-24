@@ -171,13 +171,13 @@ a:focus-visible, .link-card:focus-visible { outline: 2px solid var(--gold); outl
 
   ${instalar.map((s, i) => paso(i + 1, s)).join('')}
 
-  ${paso(6, { f: '18-datos.jpg', t: 'Comprueba el estado de tus datos', d: 'En <b>Ficha → Tus datos</b>, cuatro luces te dicen si todo va bien. Si la primera está en rojo, toca <em>Pedirla</em>: le pide al navegador que no borre la app para hacer sitio.' })}
+  ${paso(6, { f: '17-datos.jpg', t: 'Comprueba el estado de tus datos', d: 'En <b>Ficha → Tus datos</b>, cuatro luces te dicen si todo va bien. Si la primera está en rojo, toca <em>Pedirla</em>: le pide al navegador que no borre la app para hacer sitio.' })}
 
   <div class="note">
     <strong>Sobre tus datos</strong>
-    <p>Cada teléfono guarda lo suyo, dentro del aparato: la ficha, las notas, la bitácora y las imágenes. Nadie más lo ve, y no se sincroniza solo entre dispositivos.</p>
+    <p>Cada teléfono guarda lo suyo, dentro del aparato: la ficha, las notas y la bitácora. Nadie más lo ve, y no se sincroniza solo entre dispositivos.</p>
     <p>En <b>Ficha → Tus datos</b> verás cuatro luces: si el navegador ha prometido no borrar tus datos, si el almacén de imágenes funciona, si la ficha se está guardando, y cuánto hace que no haces copia. Si la primera está en rojo, toca <em>Pedirla</em>.</p>
-    <p><b>Ficha y diario</b> baja una copia ligera de todo lo escrito. <b>Todo, con imágenes</b> incluye además la galería, y pesa bastante más. Para pasar la campaña a otro teléfono, guarda la copia completa y cárgala allí con <em>Cargar archivo</em>.</p>
+    <p><b>Guardar copia</b> baja un archivo con la ficha y el diario enteros. Para pasar la campaña a otro teléfono, guárdala y cárgala allí con <em>Cargar archivo</em>.</p>
   </div>
 
   <h2 class="eyebrow">Parte dos</h2>
@@ -197,7 +197,6 @@ a:focus-visible, .link-card:focus-visible { outline: 2px solid var(--gold); outl
   ${[
     { f: '15-notas.jpg', t: 'Notas', d: 'Lo que os encontráis y no queréis olvidar: nombres, pistas, objetos, quién os debe un favor. Cada nota tiene su título y su texto, y cuando pasan de tres aparece un buscador.' },
     { f: '16-bitacora.jpg', t: 'Bitácora', d: 'Un diario por sesión, con su fecha. Toca <b>Anotar la sesión de hoy</b>, cuenta qué pasó, y se ordena solo de lo más reciente a lo más antiguo. Puedes cambiar la fecha si escribes tarde.' },
-    { f: '17-galeria.jpg', t: 'Galería', d: 'Mapas, retratos, cartas, la foto de la mesa. Se guardan en el teléfono y se reducen a 1600 píxeles para que no ocupen de más. Toca una imagen para ponerle descripción o borrarla.' },
   ].map((s, i) => paso(i + 1, s)).join('')}
 
   <div class="note">

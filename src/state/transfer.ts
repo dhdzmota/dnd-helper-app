@@ -1,4 +1,3 @@
-import { imgAll, imgPut, type StoredImage } from './db'
 import type { JournalData } from './journal'
 import type { Character } from './types'
 
@@ -66,46 +65,23 @@ export interface Backup {
   exportedAt: string
   character: Character
   journal: JournalData
-  /** Presente solo en la copia completa. */
-  images?: { id: string; caption: string; addedAt: string; width: number; height: number; dataUrl: string }[]
 }
 
 const slug = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-|-$/g, '').toLowerCase() || 'ficha'
 
-export const fileNameFor = (c: Character, conImagenes: boolean) =>
-  `${slug(c.name)}-${new Date().toISOString().slice(0, 10)}${conImagenes ? '-completa' : ''}.json`
+export const fileNameFor = (c: Character) =>
+  `${slug(c.name)}-${new Date().toISOString().slice(0, 10)}.json`
 
-const blobToDataUrl = (b: Blob) =>
-  new Promise<string>((res, rej) => {
-    const r = new FileReader()
-    r.onload = () => res(String(r.result))
-    r.onerror = () => rej(r.error)
-    r.readAsDataURL(b)
-  })
-
-async function dataUrlToBlob(url: string): Promise<Blob | null> {
-  try { return await (await fetch(url)).blob() } catch { return null }
-}
-
-export async function buildBackup(character: Character, journal: JournalData, conImagenes: boolean): Promise<Backup> {
-  const backup: Backup = {
+export function buildBackup(character: Character, journal: JournalData): Backup {
+  return {
     app: 'areen-companion',
     version: 1,
     exportedAt: new Date().toISOString(),
     character,
     journal,
   }
-  if (conImagenes) {
-    const imgs = await imgAll()
-    backup.images = await Promise.all(imgs.map(async (i) => ({
-      id: i.id, caption: i.caption, addedAt: i.addedAt,
-      width: i.width, height: i.height,
-      dataUrl: await blobToDataUrl(i.blob),
-    })))
-  }
-  return backup
 }
 
 export type SaveOutcome = { ok: boolean; message: string }
@@ -189,7 +165,7 @@ export interface RestoreResult {
 }
 
 /** Acepta una copia nueva, y también las fichas sueltas de versiones anteriores. */
-export async function restoreBackup(text: string): Promise<RestoreResult> {
+export function restoreBackup(text: string): RestoreResult {
   let parsed: unknown
   try { parsed = JSON.parse(text) } catch {
     return { ok: false, message: 'Ese texto no es una copia válida. Pega el contenido completo del archivo.' }
@@ -200,27 +176,15 @@ export async function restoreBackup(text: string): Promise<RestoreResult> {
 
   const b = parsed as Partial<Backup> & Partial<Character>
 
-  // Copia completa
+  // Copia de la app
   if (b.app === 'areen-companion' && b.character) {
-    let restauradas = 0
-    if (b.images?.length) {
-      for (const i of b.images) {
-        const blob = await dataUrlToBlob(i.dataUrl)
-        if (!blob) continue
-        const rec: StoredImage = {
-          id: i.id, blob, caption: i.caption, addedAt: i.addedAt,
-          width: i.width, height: i.height, size: blob.size,
-        }
-        if ((await imgPut(rec)) !== null) restauradas++
-      }
-    }
     const partes = ['ficha']
     if (b.journal?.notes?.length) partes.push(`${b.journal.notes.length} notas`)
     if (b.journal?.log?.length) partes.push(`${b.journal.log.length} sesiones`)
-    if (restauradas) partes.push(`${restauradas} imágenes`)
+    // Las copias antiguas traían una galería que ya no existe: se ignora sin ruido.
     return {
       ok: true,
-      message: `Restaurado: ${partes.join(', ')}.${b.images?.length && restauradas < b.images.length ? ' Algunas imágenes no cupieron.' : ''}`,
+      message: `Restaurado: ${partes.join(', ')}.`,
       character: b.character,
       journal: b.journal,
     }

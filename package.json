@@ -15,7 +15,7 @@
     "test:responsive": "node tests/responsive.mjs",
     "test:artifact": "node tests/artifact.mjs",
     "shots": "node tests/screenshots.mjs",
-    "test": "npm run check && npm run test:responsive && npm run test:ui && npm run test:classes && npm run test:hp && npm run test:journal && npm run test:gallery && npm run test:transfer && npm run test:offline && npm run test:standalone && npm run test:webview && npm run test:ios && npm run test:pages && npm run test:artifact",
+    "test": "npm run check && npm run test:responsive && npm run test:ui && npm run test:classes && npm run test:hp && npm run test:journal && npm run test:portrait && npm run test:transfer && npm run test:offline && npm run test:standalone && npm run test:webview && npm run test:ios && npm run test:pages && npm run test:artifact",
     "test:classes": "node tests/classes.mjs",
     "party": "node tests/party.mjs",
     "test:offline": "node tests/offline.mjs",
@@ -29,7 +29,7 @@
     "test:ios": "node tests/ios.mjs",
     "build:splash": "node scripts/build-ios-splash.mjs",
     "test:pages": "node tests/pages.mjs",
-    "test:gallery": "node tests/gallery.mjs"
+    "test:portrait": "node tests/portrait.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

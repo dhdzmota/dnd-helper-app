@@ -164,17 +164,6 @@ for (const [fecha, t, cuerpo] of [
 }
 await foto('bitacora', { foco: 'Bitácora', alto: 620 })
 
-await p.getByRole('button', { name: /^Galería/ }).click()
-await p.waitForTimeout(400)
-await p.setInputFiles('input[type=file][accept="image/*"]', [
-  'references/portrait-limpio.png',
-  'tests/screenshots/sub-glory.png',
-  'src/assets/sigil.png',
-  'tests/screenshots/party-monk-combat.png',
-])
-await p.waitForTimeout(4500)
-await foto('galeria', { foco: 'Galería', alto: 620 })
-
 await ir('sheet')
 await p.waitForTimeout(1500)
 await foto('datos', { foco: 'Tus datos', alto: 700 })

@@ -2,16 +2,17 @@
  * Almacenamiento en el propio dispositivo.
  *
  * La ficha vive en localStorage (pequeña, síncrona, fácil de recuperar) y además
- * se copia a IndexedDB. El diario y las imágenes viven solo en IndexedDB, porque
- * localStorage se queda corto en cuanto entra una foto.
+ * se copia a IndexedDB. El diario vive en IndexedDB con respaldo en localStorage.
  *
- * Todo degrada: si IndexedDB no está disponible, el diario cae a localStorage y
- * la galería se desactiva con un aviso, en vez de romperse en silencio.
+ * Todo degrada: si IndexedDB no está disponible, el diario se apaña con
+ * localStorage en lugar de romperse en silencio.
  */
 
 const DB_NAME = 'areen-companion'
 const DB_VERSION = 1
 const KV = 'kv'
+// 'images' fue el almacén de la galería, ya retirada. Se sigue creando para no
+// tener que subir la versión de la base en los teléfonos que ya la tienen.
 const IMAGES = 'images'
 
 let dbPromise: Promise<IDBDatabase | null> | null = null
@@ -63,19 +64,6 @@ export const dbAvailable = () => openDB().then((db) => !!db)
 export const kvGet = <T,>(key: string) => tx<T>(KV, 'readonly', (s) => s.get(key))
 export const kvSet = (key: string, value: unknown) => tx(KV, 'readwrite', (s) => s.put(value, key))
 
-export interface StoredImage {
-  id: string
-  blob: Blob
-  caption: string
-  addedAt: string
-  width: number
-  height: number
-  size: number
-}
-
-export const imgPut = (image: StoredImage) => tx(IMAGES, 'readwrite', (s) => s.put(image))
-export const imgDelete = (id: string) => tx(IMAGES, 'readwrite', (s) => s.delete(id))
-export const imgAll = () => tx<StoredImage[]>(IMAGES, 'readonly', (s) => s.getAll()).then((r) => r ?? [])
 
 /**
  * Pide al navegador que no borre estos datos para hacer sitio.

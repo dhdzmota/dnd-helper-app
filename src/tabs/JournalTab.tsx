@@ -1,13 +1,12 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Empty, Plate } from '../components/ui'
 import { fechaLarga, hoy, useJournal, type LogEntry, type Note } from '../state/journal'
 
-type Vista = 'notas' | 'bitacora' | 'galeria'
+type Vista = 'notas' | 'bitacora'
 
 const VISTAS: { id: Vista; label: string }[] = [
   { id: 'notas', label: 'Notas' },
   { id: 'bitacora', label: 'Bitácora' },
-  { id: 'galeria', label: 'Galería' },
 ]
 
 export default function JournalTab() {
@@ -29,14 +28,12 @@ export default function JournalTab() {
             {v.label}
             {v.id === 'notas' && j.notes.length > 0 && ` · ${j.notes.length}`}
             {v.id === 'bitacora' && j.log.length > 0 && ` · ${j.log.length}`}
-            {v.id === 'galeria' && j.photos.length > 0 && ` · ${j.photos.length}`}
           </button>
         ))}
       </div>
 
       {vista === 'notas' && <Notas />}
       {vista === 'bitacora' && <Bitacora />}
-      {vista === 'galeria' && <Galeria />}
     </>
   )
 }
@@ -232,115 +229,5 @@ function EntradaCard({ entrada, abierta, onToggle }: { entrada: LogEntry; abiert
         </div>
       )}
     </article>
-  )
-}
-
-/* ── Galería ───────────────────────────────────────────────────────────── */
-
-function Galeria() {
-  const j = useJournal()
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [subiendo, setSubiendo] = useState(0)
-  const [aviso, setAviso] = useState<string | null>(null)
-  const [abierta, setAbierta] = useState<string | null>(null)
-
-  const subir = async (files: FileList) => {
-    setAviso(null)
-    // Sin filtrar por tipo: algunos selectores de Android entregan el archivo sin
-    // tipo MIME, y descartarlo aquí dejaría fuera fotos perfectamente válidas.
-    const elegidas = [...files]
-    if (elegidas.length === 0) return
-
-    setSubiendo(elegidas.length)
-    const fallos: string[] = []
-    try {
-      for (const f of elegidas) {
-        const r = await j.addPhoto(f)
-        if (!r.ok) fallos.push(`${f.name || 'una imagen'}: ${r.motivo}`)
-        setSubiendo((n) => n - 1)
-      }
-    } finally {
-      // Pase lo que pase, el botón vuelve a estar disponible.
-      setSubiendo(0)
-    }
-
-    if (fallos.length) {
-      setAviso(fallos.length === elegidas.length
-        ? `No se pudo guardar ninguna. ${fallos[0]}`
-        : `Se guardaron ${elegidas.length - fallos.length} de ${elegidas.length}. ${fallos[0]}`)
-    }
-  }
-
-  const totalMB = j.photos.reduce((n, p) => n + p.size, 0) / 1024 / 1024
-
-  if (j.galeriaDisponible === false) {
-    return (
-      <Plate title="Galería">
-        <Empty title="Aquí no se pueden guardar imágenes">
-          Este navegador no deja usar su almacén de datos, normalmente por estar en modo privado.
-          Ábrela en una ventana normal y la galería funcionará.
-        </Empty>
-      </Plate>
-    )
-  }
-
-  return (
-    <Plate
-      title="Galería"
-      count={j.photos.length ? `${j.photos.length} · ${totalMB.toFixed(1)} MB` : undefined}
-    >
-      <p className="field-hint" style={{ marginTop: 0, marginBottom: 12 }}>
-        Mapas, retratos, la foto de la mesa. Se guardan en el teléfono y se reducen a 1600 píxeles
-        para que no ocupen de más.
-      </p>
-
-      <button className="btn wide gold" onClick={() => fileRef.current?.click()} disabled={subiendo > 0}>
-        {subiendo > 0 ? `Guardando ${subiendo}…` : 'Añadir imágenes'}
-      </button>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        multiple
-        hidden
-        onChange={(e) => { if (e.target.files?.length) subir(e.target.files); e.target.value = '' }}
-      />
-
-      {aviso && <p className="field-hint" style={{ color: 'var(--blood)' }}>{aviso}</p>}
-
-      {j.photos.length === 0 ? (
-        <Empty title="Galería vacía">
-          Añade el mapa que os dio el DM, o esa carta que nadie supo leer.
-        </Empty>
-      ) : (
-        <div className="gallery">
-          {j.photos.map((p) => (
-            <figure key={p.id} className={`shot ${abierta === p.id ? 'abierta' : ''}`}>
-              <button className="shot-img" onClick={() => setAbierta(abierta === p.id ? null : p.id)} aria-expanded={abierta === p.id}>
-                <img src={p.url} alt={p.caption || 'Imagen de la campaña'} loading="lazy" />
-              </button>
-              {abierta === p.id && (
-                <figcaption className="shot-edit">
-                  <input
-                    className="control"
-                    value={p.caption}
-                    placeholder="Descripción"
-                    aria-label="Descripción de la imagen"
-                    onChange={(e) => j.updatePhoto(p.id, e.target.value)}
-                  />
-                  <div className="btn-row" style={{ marginTop: 8 }}>
-                    <span className="tiny" style={{ flex: 1, alignSelf: 'center' }}>
-                      {p.width}×{p.height} · {(p.size / 1024).toFixed(0)} KB
-                    </span>
-                    <button className="btn small danger" onClick={() => j.deletePhoto(p.id)}>Borrar</button>
-                  </div>
-                </figcaption>
-              )}
-              {abierta !== p.id && p.caption && <figcaption className="shot-caption">{p.caption}</figcaption>}
-            </figure>
-          ))}
-        </div>
-      )}
-    </Plate>
   )
 }

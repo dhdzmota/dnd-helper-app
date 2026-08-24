@@ -22,7 +22,8 @@ npm test             # la suite completa
 
 Las suites por separado: `check` (reglas de 5e), `test:ui` (flujos), `test:classes`
 (las cuatro clases), `test:hp` (los puntos de golpe al editar la ficha), `test:journal`
-(notas, bitácora, galería y restauración en un dispositivo limpio), `test:responsive`,
+(notas, bitácora y restauración en un dispositivo limpio), `test:portrait` (fotos de
+cámara como retrato, con el navegador saboteado a propósito), `test:responsive`,
 `test:transfer`, `test:offline` (sin señal), `test:standalone` (el archivo suelto abierto
 desde `file://`), `test:webview` (las condiciones del APK), `test:ios` (compartir y aviso
 de Safari), `test:pages` (servida desde un subdirectorio) y `test:artifact`. Las de navegador levantan
@@ -155,7 +156,7 @@ npm run build:artifact   # artifact/areen-velthar.html — fragmento para public
 | **Combate** | La pelea | Puntos de golpe y temporales, CA, iniciativa, dados de golpe, Castigo Divino, ataques, estados, concentración. Las salvaciones de muerte **solo aparecen a 0 PG** |
 | **Conjuros** | La magia del día | Espacios por nivel, trucos con su daño actual, conjuros fijos de subclase, tu lista preparada o conocida, y el repertorio para cambiarla |
 | **Rasgos** | Qué puedes hacer | Lo que escala con el nivel, todos los recursos gastables, elecciones de clase, rasgos de linaje y de clase, y dotes |
-| **Diario** | Vuestra campaña | Notas sueltas con buscador, bitácora por sesión con fecha, y galería de imágenes guardadas en el teléfono |
+| **Diario** | Vuestra campaña | Notas sueltas con buscador, y bitácora por sesión con fecha |
 | **Ficha** | Qué eres | Personaje nuevo, desplegables encadenados, características, competencias, pericia, elecciones de clase, defensa, ataques y tus datos |
 
 La regla de reparto: **Ficha define lo que eres; las otras gastan lo que tienes.**
@@ -295,10 +296,15 @@ desplegable; sin ellos, no aparece.
 Nada sale del dispositivo, y por eso la app se toma en serio no perder lo que hay dentro.
 
 **Dónde vive cada cosa.** La ficha va en `localStorage` —pequeña, síncrona, fácil de
-recuperar— y además se copia a IndexedDB. El diario y las imágenes van solo en IndexedDB,
-porque `localStorage` se queda corto en cuanto entra una foto. Si IndexedDB no está
-disponible (modo privado, por ejemplo), el diario cae a `localStorage` y la galería se
-desactiva **con un aviso**, en vez de fallar en silencio.
+recuperar— y además se copia a IndexedDB. El diario va en IndexedDB con respaldo en
+`localStorage`. Si `localStorage` se llena, la escritura **no revienta**: se avisa en
+Ficha y la ficha se rescata de IndexedDB al volver a abrir.
+
+**El retrato se reduce antes de guardarse.** Una foto de cámara son doce megapíxeles y
+más de diez megas: guardada tal cual desbordaba la cuota de `localStorage`, y al
+desbordarla se perdía la ficha entera sin decir nada. Ahora se escala a 900 píxeles y se
+baja la calidad por pasos hasta que ocupe menos de 250 KB, respetando la orientación EXIF
+para que las fotos verticales no queden tumbadas.
 
 **Contra el borrado automático.** Al arrancar, la app pide `navigator.storage.persist()`
 para que el sistema no tire sus datos cuando el teléfono ande justo de espacio. Algunos
@@ -311,13 +317,9 @@ La última se pone en rojo a los catorce días.
 **En Android**, la copia no sale por descarga del navegador —que en un WebView no llega
 a ninguna parte— sino que la escribe el propio sistema en la carpeta Descargas.
 
-**Copias.** *Ficha y diario* baja un JSON ligero con todo lo escrito. *Todo, con imágenes*
-incluye la galería en base64, avisando si pasa de 16 MB. Al restaurar, la app dice
-exactamente qué recuperó —«ficha, 3 notas, 2 sesiones, 4 imágenes»— y acepta también las
-fichas sueltas del formato anterior.
-
-Las imágenes se reducen a 1600 píxeles y se guardan en JPEG al subirlas, para que una foto
-de cámara no se coma el espacio del teléfono.
+**Copias.** *Guardar copia* baja un JSON con la ficha y el diario. Al restaurar, la app
+dice exactamente qué recuperó —«ficha, 3 notas, 2 sesiones»— y acepta también las fichas
+sueltas de formatos anteriores.
 
 ## Navegadores antiguos
 

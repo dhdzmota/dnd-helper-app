@@ -13,8 +13,6 @@ const pick = (re, label) => {
   return m[0]
 }
 
-// El <link> de las tipografías, no el preconnect que lo precede.
-const fonts = pick(/<link\b(?=[^>]*rel=["']stylesheet["'])(?=[^>]*fonts\.googleapis\.com)[^>]*>/s, 'la hoja de tipografías')
 const styles = [...src.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/g)].map((m) => m[0])
 const scripts = [...src.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/g)].map((m) => m[0])
 if (!styles.length) throw new Error('No se encontró ningún <style> en línea')
@@ -23,11 +21,9 @@ if (!scripts.length) throw new Error('No se encontró ningún <script> en línea
 // vite-plugin-singlefile deja rel/crossorigin sobrantes al convertir link → style.
 const clean = (tag) => tag.replace(/\s+(rel|crossorigin|as)=(["'][^"']*["'])?/g, '')
 
+// Las tipografías van incrustadas en el propio CSS: ya no hay nada externo.
 const html = [
   '<title>Âreen Velthar</title>',
-  '<link rel="preconnect" href="https://fonts.googleapis.com">',
-  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
-  fonts,
   ...styles.map(clean),
   '<div id="root"></div>',
   ...scripts.map((s) => s.replace(/\s+crossorigin/g, '')),
@@ -40,4 +36,7 @@ for (const tag of ['!doctype', 'html', 'head', 'body']) {
 mkdirSync('artifact', { recursive: true })
 writeFileSync('artifact/areen-velthar.html', html)
 console.log(`artifact/areen-velthar.html — ${Math.round(html.length / 1024)} KB, ${styles.length} estilo(s), ${scripts.length} script(s)`)
-console.log(`tipografías: ${fonts.slice(0, 90)}…`)
+if (/https:\/\/fonts\.(googleapis|gstatic)/.test(html)) {
+  throw new Error('Sigue habiendo una referencia a Google Fonts: la app debe ser autónoma')
+}
+console.log('sin dependencias externas')

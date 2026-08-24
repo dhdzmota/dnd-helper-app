@@ -7,6 +7,7 @@ import { FEATS } from '../data/feats'
 import { Empty, Field, Plate } from '../components/ui'
 import { useStore } from '../state/store'
 import { requestPersistence, storageHealth, type StorageHealth } from '../state/db'
+import { prepararRetrato } from '../state/imagen'
 import { useJournal } from '../state/journal'
 import { backupToText, buildBackup, fileNameFor, restoreBackup, saveBackup, ultimaCopia, versionAndroid } from '../state/transfer'
 import type { Attack } from '../state/types'
@@ -38,24 +39,35 @@ export default function SheetTab() {
   const featsFull = d.featSlotsLeft <= 0
   const expertiseFull = c.expertise.length >= d.expertiseMax
 
-  const readPortrait = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => s.set({ portrait: String(reader.result) })
-    reader.readAsDataURL(file)
+  const [retratoMsg, setRetratoMsg] = useState<string | null>(null)
+
+  /**
+   * Una foto de cámara sin reducir no cabe en el almacenamiento del navegador, y
+   * al no caber se lleva por delante la ficha entera. Se reduce antes de guardar.
+   */
+  const readPortrait = async (file: File) => {
+    setRetratoMsg('Preparando la imagen…')
+    try {
+      const dataUrl = await prepararRetrato(file)
+      s.set({ portrait: dataUrl })
+      setRetratoMsg(`Retrato listo (${Math.round(dataUrl.length / 1024)} KB).`)
+    } catch (e) {
+      setRetratoMsg((e as Error)?.message ?? 'No se pudo usar esa imagen.')
+    }
   }
 
-  const guardarCopia = async (conImagenes: boolean) => {
+  const guardarCopia = async () => {
     setTransferMsg(null)
-    const backup = await buildBackup(c, j.exportData(), conImagenes)
-    const result = await saveBackup(backup, fileNameFor(c, conImagenes))
+    const backup = buildBackup(c, j.exportData())
+    const result = await saveBackup(backup, fileNameFor(c))
     setTransferMsg(result.message)
     setTransferOk(result.ok)
     if (result.ok) setCopia(ultimaCopia())
-    else if (!conImagenes) { setPasteOpen(true); setPasteText(backupToText(backup)) }
+    else { setPasteOpen(true); setPasteText(backupToText(backup)) }
   }
 
-  const applyText = async (text: string) => {
-    const result = await restoreBackup(text)
+  const applyText = (text: string) => {
+    const result = restoreBackup(text)
     setTransferMsg(result.message)
     setTransferOk(result.ok)
     if (!result.ok) return
@@ -151,8 +163,9 @@ export default function SheetTab() {
             type="file"
             accept="image/*"
             hidden
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) readPortrait(f); e.target.value = '' }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void readPortrait(f); e.target.value = '' }}
           />
+          {retratoMsg && <p className="field-hint">{retratoMsg}</p>}
         </Field>
       </Plate>
 
@@ -473,7 +486,7 @@ export default function SheetTab() {
       {/* ── Datos ───────────────────────────────────────────────────────── */}
       <Plate title="Tus datos">
         <p className="field-hint" style={{ marginTop: 0, marginBottom: 12 }}>
-          Todo se guarda solo, dentro de este dispositivo: la ficha, las notas, la bitácora y las imágenes.
+          Todo se guarda solo, dentro de este dispositivo: la ficha, las notas y la bitácora.
           Nada sale de aquí, y por eso nadie más puede recuperarlo por ti.
         </p>
 
@@ -486,7 +499,7 @@ export default function SheetTab() {
             </div>
             <div className="health-row">
               <span className={`health-dot ${salud.indexedDB ? 'ok' : 'warn'}`} aria-hidden="true" />
-              <span>{salud.indexedDB ? 'Almacén de imágenes y diario disponible' : 'Sin almacén: la galería no funcionará'}</span>
+              <span>{salud.indexedDB ? 'Almacén del diario disponible' : 'Sin almacén: el diario usará el respaldo'}</span>
             </div>
             <div className="health-row">
               <span className={`health-dot ${salud.localStorage ? 'ok' : 'warn'}`} aria-hidden="true" />
@@ -509,6 +522,13 @@ export default function SheetTab() {
           </div>
         )}
 
+        {s.sinSitio && (
+          <p className="field-hint" style={{ color: 'var(--blood)', marginBottom: 12 }}>
+            <strong style={{ fontWeight: 400 }}>El teléfono se quedó sin espacio.</strong> La ficha no se está
+            guardando en el respaldo rápido. Guarda una copia ahora mismo, y libera espacio en el teléfono.
+          </p>
+        )}
+
         {salud?.iosSinInstalar && (
           <p className="field-hint" style={{ color: 'var(--blood)', marginBottom: 12 }}>
             <strong style={{ fontWeight: 400 }}>Estás en Safari, no en la app.</strong> iOS borra los datos de
@@ -526,24 +546,15 @@ export default function SheetTab() {
 
         <p className="tiny" style={{ marginBottom: 8 }}>Guardar una copia</p>
         <div className="btn-row">
-          <button className="btn gold" onClick={() => guardarCopia(false)}>Ficha y diario</button>
-          <button
-            className="btn"
-            onClick={() => guardarCopia(true)}
-            disabled={j.fotosCargadas && j.photos.length === 0}
-          >
-            {j.fotosCargadas
-              ? `Todo, con ${j.photos.length} ${j.photos.length === 1 ? 'imagen' : 'imágenes'}`
-              : 'Todo, con imágenes'}
-          </button>
+          <button className="btn gold" onClick={guardarCopia}>Guardar copia</button>
         </div>
 
         <p className="tiny" style={{ margin: '16px 0 8px' }}>Restaurar o mover a otro teléfono</p>
         <div className="btn-row">
           <button className="btn" onClick={() => importRef.current?.click()}>Cargar archivo</button>
-          <button className="btn" onClick={async () => {
+          <button className="btn" onClick={() => {
             if (pasteOpen) { setPasteOpen(false); return }
-            setPasteText(backupToText(await buildBackup(c, j.exportData(), false)))
+            setPasteText(backupToText(buildBackup(c, j.exportData())))
             setPasteOpen(true)
             setTransferMsg(null)
           }}>
@@ -573,7 +584,6 @@ export default function SheetTab() {
             />
             <p className="field-hint">
               Selecciona todo y cópialo para guardarlo donde quieras, o pega aquí una copia anterior.
-              Por texto no viajan las imágenes: para esas, usa el archivo.
             </p>
             <button className="btn wide gold" onClick={() => applyText(pasteText)}>Restaurar desde este texto</button>
           </div>

@@ -1,5 +1,5 @@
 {
-  "versionName": "1.2",
-  "versionCode": 3,
+  "versionName": "1.3",
+  "versionCode": 5,
   "_nota": "versionCode sube solo en cada build de APK: Android exige que crezca para aceptar una actualización. versionName es el que ves tú; cámbialo cuando quieras."
 }

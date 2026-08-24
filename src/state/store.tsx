@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { SkillKey } from '../data/abilities'
 import { CLASS_BY_ID, asiLevelsFor } from '../data/classes'
 import { RACE_BY_ID } from '../data/races'
+import { kvGet, kvSet } from './db'
 import { AREEN, blankCharacter } from './defaults'
 import { derive, type Derived } from './derived'
 import type { Character } from './types'
@@ -63,6 +64,8 @@ export interface Store {
   toggleCondition: (name: string) => void
   shortRest: () => void
   longRest: () => void
+  /** True si el navegador se quedó sin sitio y la ficha no se está guardando. */
+  sinSitio: boolean
   reset: () => void
   newCharacter: (classId: string) => void
   replace: (c: Character) => void
@@ -73,10 +76,33 @@ const Ctx = createContext<Store | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [c, setC] = useState<Character>(load)
+
+  // Si localStorage estaba vacío pero IndexedDB guarda una ficha, se rescata.
+  useEffect(() => {
+    let vivo = true
+    if (localStorage.getItem(STORAGE_KEY)) return
+    kvGet<Character>(STORAGE_KEY).then((guardada) => {
+      if (vivo && guardada?.version === 1) setC({ ...AREEN, ...guardada })
+    })
+    return () => { vivo = false }
+  }, [])
   const [lastRest, setLastRest] = useState<string | null>(null)
 
+  const [sinSitio, setSinSitio] = useState(false)
+
   useEffect(() => {
-    const t = setTimeout(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(c)), 150)
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(c))
+        setSinSitio(false)
+      } catch {
+        // Quedarse sin cuota lanzaba una excepción sin capturar y la ficha
+        // dejaba de guardarse en silencio. Ahora se avisa y se sigue en pie.
+        setSinSitio(true)
+      }
+      // Segunda copia en IndexedDB, que aguanta mucho más que localStorage.
+      void kvSet(STORAGE_KEY, c)
+    }, 150)
     return () => clearTimeout(t)
   }, [c])
 
@@ -290,7 +316,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     spendSlot, restoreSlot, spendUse, restoreUse, setUse,
     toggleHitDie, setDeathSave, togglePrepared, toggleSkill, toggleFeat, toggleCantrip,
     toggleCondition, toggleExpertise, toggleChoice,
-    shortRest, longRest, reset, newCharacter, replace, lastRest,
+    shortRest, longRest, reset, newCharacter, replace, lastRest, sinSitio,
   }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
