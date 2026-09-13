@@ -1,4 +1,5 @@
 import type { AbilityKey, SkillKey } from '../data/abilities'
+import type { Bolsa, GearCategory } from '../data/gear'
 
 export interface Attack {
   id: string
@@ -9,6 +10,19 @@ export interface Attack {
   damageType: string
   damageBonus: number
   notes: string
+}
+
+/** Una línea de la mochila. Los pesos van en libras y los precios en cobre. */
+export interface InvItem {
+  id: string
+  name: string
+  qty: number
+  weight: number
+  cost: number
+  category: GearCategory
+  notes: string
+  /** Lo llevas encima y a mano, no guardado en el fondo del morral. */
+  equipped: boolean
 }
 
 export interface Character {
@@ -47,6 +61,17 @@ export interface Character {
   speedBonus: number
   attacks: Attack[]
   notes: string
+
+  /** Monedas por tipo, del cobre al platino. */
+  coins: Bolsa
+  /** La mochila. La armadura puesta no va aquí: sale de armorId y shield. */
+  items: InvItem[]
+
+  /**
+   * El orden en que este jugador quiere ver sus opciones de turno. Ids de
+   * `src/data/turn.ts` y de sus armas y conjuros; lo que no esté aquí va detrás.
+   */
+  turnOrder: string[]
 
   // ── Live, spendable state ────────────────────────────────────────────────
   hpCurrent: number

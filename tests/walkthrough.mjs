@@ -101,7 +101,7 @@ await foto('caracteristicas', { foco: 'Características', alto: 560 })
 // 9 — Competencias: dos de la lista del monje, dos del trasfondo.
 await ir('sheet')
 for (const sk of ['Acrobacias', 'Sigilo', 'Perspicacia', 'Religión']) {
-  await plate('Competencias').getByRole('button', { name: sk, exact: true }).click()
+  await plate('Competencias').getByRole('button', { name: new RegExp(`^${sk}\\b`) }).click()
   await p.waitForTimeout(120)
 }
 await foto('competencias', { foco: 'Competencias', alto: 620 })

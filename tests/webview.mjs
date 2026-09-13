@@ -1,4 +1,5 @@
 import { chromium } from 'playwright-core'
+import { PESTANAS } from './serve.mjs'
 import { createServer } from 'node:http'
 import { readFileSync, existsSync, rmSync, cpSync } from 'node:fs'
 import { join, extname } from 'node:path'
@@ -59,7 +60,7 @@ p.on('request', (r) => { if (!r.url().startsWith('http://127.0.0.1:4200') && !r.
 console.log('\nLa app dentro del contenedor')
 await p.goto(URL_APP, { waitUntil: 'networkidle' })
 await p.waitForTimeout(1800)
-check('arranca', await p.locator('.nav-btn').count() === 6)
+check('arranca', await p.locator('.nav-btn').count() === PESTANAS)
 check('sin pedir nada a internet', externas.length === 0, JSON.stringify(externas.slice(0, 3)))
 check('sin ningún 404', noEncontrados.length === 0, JSON.stringify(noEncontrados))
 check('no intenta registrar service worker',
@@ -110,7 +111,7 @@ await viejo.close()
 console.log('\nEl enrutado por hash sobrevive a una ruta inventada')
 await p.goto('http://127.0.0.1:4200/loquesea#traits', { waitUntil: 'networkidle' })
 await p.waitForTimeout(1200)
-check('una ruta desconocida devuelve la app', await p.locator('.nav-btn').count() === 6)
+check('una ruta desconocida devuelve la app', await p.locator('.nav-btn').count() === PESTANAS)
 
 await p.goto(`${URL_APP}#hero`, { waitUntil: 'networkidle' })
 await p.waitForTimeout(1200)

@@ -1,5 +1,6 @@
 import type { AbilityKey } from '../data/abilities'
 import { CLASS_BY_ID } from '../data/classes'
+import { SIN_MONEDAS, equipoInicial } from '../data/gear'
 import type { Character } from './types'
 import portrait from '../assets/portrait.jpg'
 
@@ -38,6 +39,10 @@ export const AREEN: Character = {
     { id: 'javelin', name: 'Jabalina', ability: 'str', proficient: true, damage: '1d6', damageType: 'Perforante', damageBonus: 0, notes: 'Arrojadiza, alcance 30/120 pies' },
   ],
   notes: 'Juró proteger al mundo de la magia. Ahora protege la verdad de la mentira.',
+
+  coins: { ...SIN_MONEDAS, po: 15 },
+  items: equipoInicial('paladin'),
+  turnOrder: [],
 
   hpCurrent: 25,
   hpTemp: 0,
@@ -92,6 +97,9 @@ export function blankCharacter(classId: string, level = 3): Character {
     maxHpOverride: null,
     speedBonus: 0,
     attacks: [],
+    coins: { ...SIN_MONEDAS, po: 15 },
+    items: equipoInicial(classId),
+    turnOrder: [],
     hpCurrent: 1,
     hpTemp: 0,
     hitDiceSpent: 0,

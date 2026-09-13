@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ABILITY_INFO, signed } from '../data/abilities'
 import { SPELL_BY_ID } from '../data/spells'
 import { CONDITIONS } from '../state/defaults'
+import Turno from '../components/Turno'
 import { Empty, Plate, Resource, Tally } from '../components/ui'
 import { useStore } from '../state/store'
 
@@ -24,6 +25,9 @@ export default function CombatTab() {
 
   return (
     <>
+      {/* ── Ayuda de turno: primero, porque es lo que busca quien empieza ── */}
+      <Turno />
+
       {/* ── Puntos de golpe ─────────────────────────────────────────────── */}
       <Plate title="Puntos de golpe">
         <div className="hp-head">
@@ -235,6 +239,7 @@ export default function CombatTab() {
               max={r.max}
               spent={r.spent}
               onSet={(n) => s.setUse(r.id, n)}
+              opciones={r.opciones}
             />
           ))}
         </Plate>

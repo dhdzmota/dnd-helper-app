@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { SkillKey } from '../data/abilities'
 import { CLASS_BY_ID, asiLevelsFor } from '../data/classes'
 import { RACE_BY_ID } from '../data/races'
+import { SIN_MONEDAS, contenidoDePaquete, equipoInicial, lineaDeCatalogo, type Bolsa } from '../data/gear'
 import { kvGet, kvSet } from './db'
 import { AREEN, blankCharacter } from './defaults'
 import { derive, type Derived } from './derived'
-import type { Character } from './types'
+import type { Character, InvItem } from './types'
 
 const STORAGE_KEY = 'areen-velthar-companion:v1'
 
@@ -23,6 +24,13 @@ function load(): Character {
       scores: { ...AREEN.scores, ...parsed.scores },
       choices: parsed.choices ?? {},
       usesSpent: { ...parsed.usesSpent },
+      // Una ficha guardada antes de que existiera el inventario empieza con la
+      // mochila vacía y sin dinero. Heredar el equipo de Âreen le pondría una
+      // cota de malla al monje de la mesa; para llenarla de golpe hay un botón
+      // de «equipo inicial» en la pestaña.
+      coins: { ...SIN_MONEDAS, ...parsed.coins },
+      items: parsed.items ?? [],
+      turnOrder: parsed.turnOrder ?? [],
     }
     // La reserva de Imposición de Manos pasó a ser un recurso genérico.
     if (parsed.layOnHandsUsed) {
@@ -62,6 +70,13 @@ export interface Store {
   toggleExpertise: (key: string) => void
   toggleChoice: (groupId: string, optionId: string) => void
   toggleCondition: (name: string) => void
+  addItem: (item: InvItem) => void
+  addFromCatalog: (gearId: string, qty?: number) => void
+  addPack: (packId: string) => void
+  addStartingGear: () => void
+  updateItem: (id: string, patch: Partial<InvItem>) => void
+  removeItem: (id: string) => void
+  setCoins: (patch: Partial<Bolsa>) => void
   shortRest: () => void
   longRest: () => void
   /** True si el navegador se quedó sin sitio y la ficha no se está guardando. */
@@ -82,7 +97,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     let vivo = true
     if (localStorage.getItem(STORAGE_KEY)) return
     kvGet<Character>(STORAGE_KEY).then((guardada) => {
-      if (vivo && guardada?.version === 1) setC({ ...AREEN, ...guardada })
+      if (vivo && guardada?.version === 1) setC({
+        ...AREEN, ...guardada,
+        coins: { ...SIN_MONEDAS, ...guardada.coins },
+        items: guardada.items ?? [],
+        turnOrder: guardada.turnOrder ?? [],
+      })
     })
     return () => { vivo = false }
   }, [])
@@ -104,6 +124,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       void kvSet(STORAGE_KEY, c)
     }, 150)
     return () => clearTimeout(t)
+  }, [c])
+
+  /**
+   * Guardar tiene 150 ms de rebote para no escribir en cada pulsación. Si el
+   * teléfono se lleva la app por delante dentro de esa ventana —Android mata
+   * apps en segundo plano sin avisar— ese último cambio se perdería. Al ocultarse
+   * la página se vuelca lo pendiente a mano, que es la única escritura que el
+   * navegador garantiza en ese momento.
+   */
+  useEffect(() => {
+    const volcar = () => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(c)) } catch { /* sin sitio */ }
+    }
+    const alOcultarse = () => { if (document.visibilityState === 'hidden') volcar() }
+    document.addEventListener('visibilitychange', alOcultarse)
+    window.addEventListener('pagehide', volcar)
+    return () => {
+      document.removeEventListener('visibilitychange', alOcultarse)
+      window.removeEventListener('pagehide', volcar)
+    }
   }, [c])
 
   const d = useMemo(() => derive(c), [c])
@@ -276,6 +316,53 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLastRest('Descanso corto — recuperaste los usos que vuelven con descanso corto. Gasta dados de golpe abajo para curarte.')
   }, [])
 
+  // ── Inventario ───────────────────────────────────────────────────────────
+
+  const addItem = useCallback((item: InvItem) =>
+    setC((p) => ({ ...p, items: [...p.items, item] })), [])
+
+  /**
+   * Añadir del catálogo apila sobre la línea que ya exista igual, en vez de
+   * dejar tres renglones de «Antorcha» sueltos.
+   */
+  const addFromCatalog = useCallback((gearId: string, qty = 1) => setC((p) => {
+    const linea = lineaDeCatalogo(gearId, qty)
+    if (!linea) return p
+    const ya = p.items.find((i) => i.name === linea.name && i.notes === linea.notes)
+    if (ya) return { ...p, items: p.items.map((i) => (i === ya ? { ...i, qty: i.qty + qty } : i)) }
+    return { ...p, items: [...p.items, linea] }
+  }), [])
+
+  const apilar = (items: InvItem[], nuevos: InvItem[]) => {
+    const out = [...items]
+    for (const n of nuevos) {
+      const i = out.findIndex((x) => x.name === n.name && x.notes === n.notes)
+      if (i >= 0) out[i] = { ...out[i], qty: out[i].qty + n.qty }
+      else out.push(n)
+    }
+    return out
+  }
+
+  const addPack = useCallback((packId: string) =>
+    setC((p) => ({ ...p, items: apilar(p.items, contenidoDePaquete(packId)) })), [])
+
+  const addStartingGear = useCallback(() =>
+    setC((p) => ({ ...p, items: apilar(p.items, equipoInicial(p.classId)) })), [])
+
+  const updateItem = useCallback((id: string, patch: Partial<InvItem>) =>
+    setC((p) => ({ ...p, items: p.items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })), [])
+
+  const removeItem = useCallback((id: string) =>
+    setC((p) => ({ ...p, items: p.items.filter((i) => i.id !== id) })), [])
+
+  const setCoins = useCallback((patch: Partial<Bolsa>) => setC((p) => {
+    const next = { ...p.coins, ...patch }
+    for (const k of Object.keys(next) as (keyof Bolsa)[]) {
+      next[k] = Math.max(0, Math.floor(Number(next[k]) || 0))
+    }
+    return { ...p, coins: next }
+  }), [])
+
   const longRest = useCallback(() => {
     setC((p) => {
       const dd = derive(p)
@@ -303,7 +390,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setC({ ...fresh, hpCurrent: derive(fresh).maxHp })
     setLastRest(null)
   }, [])
-  const replace = useCallback((next: Character) => setC({ ...AREEN, ...next }), [])
+  const replace = useCallback((next: Character) => setC({
+    ...AREEN, ...next,
+    coins: { ...SIN_MONEDAS, ...next.coins },
+    items: next.items ?? [],
+    turnOrder: next.turnOrder ?? [],
+  }), [])
 
   useEffect(() => {
     if (!lastRest) return
@@ -316,6 +408,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     spendSlot, restoreSlot, spendUse, restoreUse, setUse,
     toggleHitDie, setDeathSave, togglePrepared, toggleSkill, toggleFeat, toggleCantrip,
     toggleCondition, toggleExpertise, toggleChoice,
+    addItem, addFromCatalog, addPack, addStartingGear, updateItem, removeItem, setCoins,
     shortRest, longRest, reset, newCharacter, replace, lastRest, sinSitio,
   }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

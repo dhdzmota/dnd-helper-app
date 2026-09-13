@@ -88,6 +88,23 @@ export function JournalProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t)
   }, [data, cargado])
 
+  // Lo mismo que en la ficha: si el teléfono cierra la app dentro del rebote de
+  // 200 ms, la última nota escrita se perdería. IndexedDB no da tiempo aquí, así
+  // que se vuelca a localStorage, que es de donde se rescata al abrir.
+  useEffect(() => {
+    if (!cargado) return
+    const volcar = () => {
+      try { localStorage.setItem(KEY, JSON.stringify(data)) } catch { /* sin sitio */ }
+    }
+    const alOcultarse = () => { if (document.visibilityState === 'hidden') volcar() }
+    document.addEventListener('visibilitychange', alOcultarse)
+    window.addEventListener('pagehide', volcar)
+    return () => {
+      document.removeEventListener('visibilitychange', alOcultarse)
+      window.removeEventListener('pagehide', volcar)
+    }
+  }, [data, cargado])
+
   const addNote = useCallback(() => {
     const nuevo: Note = { id: id(), title: '', body: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
     setData((d) => ({ ...d, notes: [nuevo, ...d.notes] }))

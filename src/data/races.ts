@@ -1,8 +1,11 @@
+import type { TurnSlot } from './turn'
 import type { AbilityKey } from './abilities'
 
 export interface Trait {
   name: string
   text: string
+  /** Apartado del turno en que se usa, si se usa en combate. */
+  turno?: TurnSlot
   /** Character level at which the trait comes online. Defaults to 1. */
   level?: number
 }
@@ -70,7 +73,7 @@ export const RACES: Race[] = [
     ancestries: DRACONIC_ANCESTRIES,
     traits: [
       {
-        name: 'Arma de aliento',
+        name: 'Arma de aliento', turno: 'accion',
         text: 'Como acción, exhalas energía destructiva en el área que marca tu linaje. Cada criatura en el área hace una tirada de salvación; la CD es 8 + tu modificador de Constitución + tu bonificador de competencia. Recibe el daño completo si falla, la mitad si tiene éxito. Recuperas el uso al terminar un descanso corto o largo.',
       },
       {

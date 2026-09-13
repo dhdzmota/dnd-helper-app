@@ -16,3 +16,6 @@ ficha-dnd.html
 # público, y con la clave cualquiera podría firmar una actualización falsa.
 # Guárdala fuera, y sin perderla: sin ella no puedes actualizar la app.
 android/*.keystore
+
+# Carpeta del IDE.
+.idea/

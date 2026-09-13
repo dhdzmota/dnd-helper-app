@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs'
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
+/** Cuántos botones tiene la barra de abajo. Las pruebas lo usan como «arrancó». */
+export const PESTANAS = 7
+
 async function reachable(url) {
   try { return (await fetch(url)).ok } catch { return false }
 }

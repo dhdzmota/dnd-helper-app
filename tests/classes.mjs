@@ -72,17 +72,17 @@ await startAs('Pícaro')
 await goto('sheet')
 check('aparece la sección de pericia', await plate('Pericia').count() === 1)
 check('y pide competencias primero', has(await plate('Pericia').innerText(), 'Primero elige competencias'))
-await plate('Competencias').getByRole('button', { name: 'Sigilo' }).click()
-await plate('Competencias').getByRole('button', { name: 'Juego de manos' }).click()
+await plate('Competencias').getByRole('button', { name: /^Sigilo\b/ }).click()
+await plate('Competencias').getByRole('button', { name: /^Juego de manos\b/ }).click()
 await p.waitForTimeout(300)
-await plate('Pericia').getByRole('button', { name: 'Sigilo' }).click()
-await plate('Pericia').getByRole('button', { name: 'Juego de manos' }).click()
+await plate('Pericia').getByRole('button', { name: /^Sigilo\b/ }).click()
+await plate('Pericia').getByRole('button', { name: /^Juego de manos\b/ }).click()
 await p.waitForTimeout(300)
 check('2 de 2 pericias', has(await plate('Pericia').innerText(), '2 de 2'))
 await goto('hero')
 check('la pericia dobla la competencia', await p.locator('.pip-prof.expert').count() === 2)
 await goto('sheet')
-await plate('Competencias').getByRole('button', { name: 'Sigilo' }).click()
+await plate('Competencias').getByRole('button', { name: /^Sigilo\b/ }).click()
 await p.waitForTimeout(300)
 check('quitar la competencia quita también su pericia', has(await plate('Pericia').innerText(), '1 de 2'))
 
@@ -129,8 +129,13 @@ check('los trucos muestran su daño actual', await plate('Trucos').count() === 1
 
 await goto('traits')
 check('3 puntos de hechicería', has(await plate('Recursos').innerText(), 'Puntos de hechicería'))
-check('la metamagia elegida se ve en Rasgos', has(await plate('Metamagia').innerText(), 'Conjuro Acelerado'))
-check('y con su texto de reglas', has(await plate('Metamagia').innerText(), 'acción adicional'))
+// La metamagia ya no tiene placa aparte: cuelga de la reserva que la paga, para
+// que se vea de un vistazo en qué se gastan los puntos.
+const puntos = p.locator('.resource').filter({ hasText: 'Puntos de hechicería' }).first()
+check('la metamagia elegida cuelga de los puntos que la pagan',
+  has(await puntos.innerText(), 'Conjuro Acelerado'), (await puntos.innerText()).replace(/\n/g, ' ').slice(0, 90))
+check('y con su texto de reglas', has(await puntos.innerText(), 'acción adicional'))
+check('sin repetirse en una placa suelta', await plate('Metamagia').count() === 0)
 
 console.log('\nTodas las subclases están a la vista')
 const opciones = async (label) =>

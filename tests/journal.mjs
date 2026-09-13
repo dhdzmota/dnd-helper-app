@@ -21,8 +21,10 @@ const plate = (t) => p.locator('.plate').filter({ has: p.locator('.eyebrow', { h
 
 console.log('\nLa pestaña Diario existe y tiene tres apartados')
 await ir('journal')
-check('hay seis pestañas', await p.locator('.nav-btn').count() === 6)
-check('Diario está en la barra', has(await p.locator('.nav-btn').nth(4).innerText(), 'Diario'))
+check('hay siete pestañas', await p.locator('.nav-btn').count() === 7)
+check('Diario está en la barra',
+  has(await p.locator('.nav-btn').nth(5).innerText(), 'Diario'),
+  (await p.locator('.nav-btn').allInnerTexts()).join('/'))
 check('ya no hay galería', await p.getByRole('button', { name: /^Galería/ }).count() === 0)
 for (const v of ['Notas', 'Bitácora']) {
   check(`el apartado ${v} se puede abrir`, await p.getByRole('button', { name: new RegExp(`^${v}`) }).count() === 1)

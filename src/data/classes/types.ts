@@ -1,4 +1,5 @@
 import type { AbilityKey, SkillKey } from '../abilities'
+import type { TurnSlot } from '../turn'
 
 /** Absent = Manual del Jugador. 'TCE' = rasgo opcional de Tasha's. */
 export type Source = 'TCE'
@@ -7,6 +8,8 @@ export interface ClassFeature {
   name: string
   level: number
   text: string
+  /** Apartado del turno en que se usa, si se usa en combate. */
+  turno?: TurnSlot
   /** Marks the feature as belonging to a subclass; absent = base class. */
   subclass?: string
   source?: Source
@@ -18,6 +21,8 @@ export interface FightingStyle {
   id: string
   name: string
   text: string
+  /** Apartado del turno en que se usa, si se usa en combate. */
+  turno?: TurnSlot
   source?: Source
   /** Blessed Warrior and the like: cantrips from another class's list. */
   grantsCantrips?: { count: number; listId: string; ability: AbilityKey }
@@ -37,6 +42,14 @@ export interface ClassResource {
   id: string
   name: string
   detail: string
+  /**
+   * Nombres de los rasgos que se pagan con esta reserva, cuando no se llaman
+   * «Reserva: Efecto». Sin esto, una reserva de puntos enseña cuántos te quedan
+   * sin decir en qué gastarlos, que es lo que menos ayuda a quien empieza.
+   */
+  alimenta?: string[]
+  /** Apartado del turno en que se usa, si se usa en combate. */
+  turno?: TurnSlot
   recharge: 'short' | 'long'
   kind: 'uses' | 'pool'
   /** Class level at which the resource appears. */
@@ -64,7 +77,13 @@ export interface ChoiceGroup {
   level: number
   /** How many picks at each class level, index 0 = level 1. */
   countByLevel: number[]
-  options: { id: string; name: string; text: string; source?: Source }[]
+  /**
+   * Id de la reserva que paga estas opciones: la metamagia sale de los puntos de
+   * hechicería y las disciplinas del ki. Sirve para que la reserva enseñe lo que
+   * alimenta en vez de un texto vago.
+   */
+  resourceId?: string
+  options: { id: string; name: string; text: string; source?: Source; turno?: TurnSlot }[]
 }
 
 /** Armour class from a class feature instead of worn armour. */

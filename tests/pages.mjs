@@ -1,4 +1,5 @@
 import { chromium } from 'playwright-core'
+import { PESTANAS } from './serve.mjs'
 import { createServer } from 'node:http'
 import { readFileSync, existsSync } from 'node:fs'
 import { join, extname } from 'node:path'
@@ -52,7 +53,7 @@ const info = await p.evaluate(async () => {
     icono: document.querySelector('link[rel=apple-touch-icon]')?.href ?? null,
   }
 })
-check('la app arranca', info.pestañas === 6)
+check('la app arranca', info.pestañas === PESTANAS, String(info.pestañas))
 check('sin ninguna ruta rota', noEncontrados.length === 0, JSON.stringify(noEncontrados.slice(0, 5)))
 check('el retrato carga', info.retrato)
 check('las tipografías cargan', info.fuentes.length === 3, JSON.stringify(info.fuentes))
@@ -69,7 +70,7 @@ await p.waitForTimeout(500)
 await ctx.setOffline(true)
 await p.goto(`${RAIZ}?b=1#combat`, { waitUntil: 'domcontentloaded' })
 await p.waitForTimeout(1800)
-check('sigue abriendo sin conexión', await p.locator('.nav-btn').count() === 6)
+check('sigue abriendo sin conexión', await p.locator('.nav-btn').count() === PESTANAS)
 check('y conserva la ficha', (await p.locator('.hp-cur').innerText()) === '20')
 await ctx.setOffline(false)
 

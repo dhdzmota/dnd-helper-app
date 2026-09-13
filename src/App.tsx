@@ -8,6 +8,7 @@ import HeroTab from './tabs/HeroTab'
 import CombatTab from './tabs/CombatTab'
 import SpellsTab from './tabs/SpellsTab'
 import FeaturesTab from './tabs/FeaturesTab'
+import InventoryTab from './tabs/InventoryTab'
 import JournalTab from './tabs/JournalTab'
 import SheetTab from './tabs/SheetTab'
 
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'combat', label: 'Combate', icon: ICONS.combat, Panel: CombatTab },
   { id: 'spells', label: 'Conjuros', icon: ICONS.spells, Panel: SpellsTab },
   { id: 'traits', label: 'Rasgos', icon: ICONS.traits, Panel: FeaturesTab },
+  { id: 'gear', label: 'Equipo', icon: ICONS.gear, Panel: InventoryTab },
   { id: 'journal', label: 'Diario', icon: ICONS.journal, Panel: JournalTab },
   { id: 'sheet', label: 'Ficha', icon: ICONS.sheet, Panel: SheetTab },
 ] as const

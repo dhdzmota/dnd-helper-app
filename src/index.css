@@ -213,7 +213,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 
 .nav {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   background: #0B0C0E;
   border-top: 1px solid var(--edge);
   padding-bottom: env(safe-area-inset-bottom);
@@ -447,6 +447,42 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .row.is-prof .row-mod { color: var(--parchment); }
 .row.is-prof .row-name { color: var(--gold-warm); }
 
+/* Habilidades agrupadas por característica: el grupo lleva el rótulo, así que
+   la fila ya no repite la abreviatura y gana ancho para el nombre en inglés. */
+.skill-group + .skill-group { margin-top: 16px; }
+.skill-group-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--gold-dim);
+  font-family: var(--data);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+}
+.skill-group-title span {
+  font-size: 0.5625rem;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--ash-dim);
+}
+.row-skill { grid-template-columns: 14px 1fr auto; }
+.row-skill .row-name { display: block; line-height: 1.2; }
+.row-en {
+  display: block;
+  margin-top: 1px;
+  font-family: var(--data);
+  font-size: 0.625rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--ash-dim);
+}
+.row.is-prof .row-en { color: var(--ash); }
+
 /* Punto de competencia: hueco / relleno / doble (pericia) */
 .pip-prof {
   width: 9px; height: 9px;
@@ -457,6 +493,295 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 }
 .pip-prof.on { background: var(--gold); border-color: var(--gold); }
 .pip-prof.expert { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 2px var(--plate), 0 0 0 3px var(--gold-dim); }
+
+/* Lo que se puede hacer con una reserva, colgando de ella. */
+.res-opciones { list-style: none; margin: 0 0 10px; padding: 0 0 0 10px; border-left: 1px solid var(--gold-dim); }
+.res-opciones li { margin-bottom: 7px; }
+.res-opciones li:last-child { margin-bottom: 0; }
+.res-opcion-nombre {
+  display: block;
+  font-family: var(--data);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+}
+.res-opcion-texto { display: block; font-size: 0.8125rem; line-height: 1.45; color: var(--ash); margin-top: 2px; }
+
+/* ── Ayuda de turno ───────────────────────────────────────────────────────── */
+
+.turno-plate { padding: 0; border-color: var(--gold-dim); margin-bottom: 12px; }
+.turno-abrir {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 15px;
+  background: linear-gradient(180deg, rgba(201,164,106,0.07), transparent);
+}
+.turno-abrir-txt { flex: 1; }
+.turno-abrir-t {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gold-warm);
+}
+.turno-abrir-s {
+  display: block;
+  font-family: var(--data);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-top: 3px;
+}
+.turno-cuerpo { padding: 0 15px 15px; }
+.turno-sec { margin-top: 16px; }
+.turno-hint { font-size: 0.8125rem; color: var(--ash); margin: 5px 0 6px; line-height: 1.4; }
+
+.turno-op { border-bottom: 1px solid rgba(36,37,42,0.6); }
+.turno-op:last-child { border-bottom: none; }
+.turno-op-head { display: flex; align-items: center; gap: 9px; }
+.turno-op-btn {
+  display: grid;
+  grid-template-columns: 1fr auto 14px;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 0;
+}
+.turno-op-nombre { font-size: 0.9375rem; line-height: 1.2; }
+.turno-op-nombre.orden { flex: 1; padding: 9px 0; }
+.turno-op-en {
+  display: block;
+  font-family: var(--data);
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  color: var(--ash-dim);
+  margin-top: 2px;
+}
+/* Los números del arma y lo que queda del recurso, uno debajo del otro. */
+.turno-op-datos, .turno-op-queda {
+  grid-column: 2;
+  font-family: var(--data);
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  color: var(--ash);
+  text-align: right;
+  white-space: nowrap;
+}
+.turno-op-queda { color: var(--gold-dim); }
+/* Tachar solo el nombre en español: el inglés debajo sigue siendo legible,
+   que es justo para lo que está ahí. */
+.turno-op.agotada .turno-op-nombre { color: var(--ash-dim); }
+.turno-op.agotada .turno-op-es { text-decoration: line-through; }
+.turno-motivo {
+  font-size: 0.75rem;
+  color: #B06A55;
+  margin: -4px 0 8px;
+  padding-left: 9px;
+  border-left: 2px solid rgba(142,35,35,0.45);
+}
+.turno-detalle { padding: 0 0 12px; }
+.turno-detalle p { font-size: 0.875rem; line-height: 1.5; color: var(--ash); margin: 0 0 9px; }
+
+.turno-mover { display: flex; gap: 4px; flex: none; }
+.turno-flecha {
+  width: 34px; height: 34px;
+  border: 1px solid var(--edge);
+  background: var(--raise);
+  color: var(--gold);
+  font-family: var(--data);
+  font-size: 0.875rem;
+  display: grid;
+  place-items: center;
+}
+.turno-flecha:disabled { opacity: 0.25; color: var(--ash-dim); }
+
+/* ── Inventario: dinero, carga y mochila ──────────────────────────────────── */
+
+.coin-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.coin {
+  border: 1px solid var(--edge);
+  background: var(--raise);
+  padding: 8px 4px 6px;
+  text-align: center;
+}
+.coin-abbr {
+  font-family: var(--data);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.coin-name { font-family: var(--data); font-size: 0.5625rem; letter-spacing: 0.06em; color: var(--ash); }
+.coin-en { font-family: var(--data); font-size: 0.5rem; letter-spacing: 0.04em; color: var(--ash-dim); }
+/* Cada metal con su tono, para encontrarlos de un vistazo en la mesa. */
+.coin-pt .coin-abbr { color: #CFD6DC; }
+.coin-po .coin-abbr { color: var(--gold); }
+.coin-pe .coin-abbr { color: #B8A66A; }
+.coin-pp .coin-abbr { color: #AFB3B8; }
+.coin-pc .coin-abbr { color: #B87333; }
+.coin-input {
+  width: 100%;
+  margin: 5px 0 4px;
+  background: var(--ink);
+  border: 1px solid var(--edge);
+  color: var(--parchment);
+  font-family: var(--data);
+  font-size: 1rem;
+  font-weight: 300;
+  text-align: center;
+  padding: 5px 0;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.coin-input::-webkit-outer-spin-button,
+.coin-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.coin-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.coin-step {
+  border: 1px solid var(--edge);
+  background: var(--plate);
+  color: var(--ash);
+  font-family: var(--data);
+  font-size: 0.875rem;
+  font-weight: 200;
+  padding: 4px 0;
+  min-height: 28px;
+}
+.coin-step:hover:not(:disabled) { color: var(--gold); border-color: var(--gold-dim); }
+.coin-step:disabled { opacity: 0.25; }
+
+.pago { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; margin-top: 12px; }
+.pago .btn { white-space: nowrap; }
+.pago-msg {
+  font-size: 0.8125rem;
+  color: var(--gold-warm);
+  border-left: 2px solid var(--gold-dim);
+  padding-left: 9px;
+  margin: 8px 0 0;
+}
+
+/* La barra de espacios de conjuro usa fondo rojo; aquí engañaría, porque
+   parecería la carga llena. El hueco que queda libre se pinta neutro. */
+.pool-bar.carga { background: var(--raise); }
+.carga-tope {
+  position: absolute;
+  top: -2px; bottom: -2px;
+  width: 1px;
+  background: var(--ash-dim);
+}
+.pool-fill.carga-lento { background: linear-gradient(90deg, var(--gold-dim), #C2903A); }
+.pool-fill.carga-muy-lento { background: linear-gradient(90deg, #C2903A, #C25A3A); }
+.pool-fill.carga-pasado { background: linear-gradient(90deg, #C25A3A, var(--blood)); }
+.carga-desglose {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-family: var(--data);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ash-dim);
+  margin-top: 6px;
+}
+.carga-aviso {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  margin: 9px 0 0;
+  padding-left: 9px;
+  border-left: 2px solid var(--gold-dim);
+  color: var(--gold-warm);
+}
+.carga-aviso.muy-lento, .carga-aviso.pasado { color: #D8836A; border-left-color: rgba(142,35,35,0.6); }
+
+.hallazgos { display: flex; flex-direction: column; margin-top: 8px; }
+.hallazgo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(36,37,42,0.6);
+}
+.hallazgo:last-child { border-bottom: none; }
+.hallazgo:hover .hallazgo-nombre { color: var(--gold-warm); }
+.hallazgo-nombre { font-size: 0.9375rem; line-height: 1.2; color: var(--parchment); }
+.hallazgo-en {
+  display: block;
+  font-family: var(--data);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--ash-dim);
+}
+.hallazgo-datos {
+  font-family: var(--data);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--ash);
+  white-space: nowrap;
+  flex: none;
+}
+
+.inv-group + .inv-group { margin-top: 16px; }
+.inv-item { border-bottom: 1px solid rgba(36,37,42,0.6); }
+.inv-item:last-child { border-bottom: none; }
+.inv-item .feature-head {
+  display: grid;
+  grid-template-columns: 30px 1fr auto 14px;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 0;
+}
+.inv-qty {
+  font-family: var(--data);
+  font-size: 0.8125rem;
+  font-weight: 300;
+  text-align: center;
+  color: var(--ash);
+  border: 1px solid var(--edge);
+  padding: 2px 0;
+  font-variant-numeric: tabular-nums;
+}
+.inv-qty.eq { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,164,106,0.09); }
+.inv-nombre { font-size: 0.9375rem; line-height: 1.2; }
+.inv-nota {
+  display: block;
+  font-family: var(--data);
+  font-size: 0.5625rem;
+  letter-spacing: 0.05em;
+  color: var(--ash-dim);
+  margin-top: 2px;
+}
+.inv-peso {
+  font-family: var(--data);
+  font-size: 0.6875rem;
+  font-weight: 300;
+  color: var(--ash);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.inv-edit { display: flex; flex-direction: column; gap: 8px; padding: 2px 0 14px; }
+.inv-cantidad { display: flex; align-items: center; gap: 10px; }
+.inv-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.inv-num { display: flex; flex-direction: column; gap: 4px; }
+.inv-num span {
+  font-family: var(--data);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ash-dim);
+}
 
 /* ── Marcas de recurso: rombos (espacios) y pastillas (usos) ──────────────── */
 
@@ -854,6 +1179,15 @@ textarea.control { font-family: var(--body); font-size: 1rem; letter-spacing: 0;
 .chip.on { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,164,106,0.09); }
 .chip.on.warn { color: var(--blood); border-color: rgba(142,35,35,0.45); background: rgba(142,35,35,0.09); }
 .chip:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Chip de habilidad: el inglés debajo, por si el DM la pide en inglés. */
+.chip-skill { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; line-height: 1.15; }
+.chip-en {
+  font-size: 0.5625rem;
+  letter-spacing: 0.04em;
+  color: var(--ash-dim);
+}
+.chip-skill.on .chip-en { color: var(--gold-dim); }
 
 .empty {
   padding: 14px 15px;

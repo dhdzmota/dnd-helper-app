@@ -47,13 +47,18 @@ export default function FeaturesTab() {
               max={r.max}
               spent={r.spent}
               onSet={(n) => s.setUse(r.id, n)}
+              opciones={r.opciones}
             />
           ))
         )}
       </Plate>
 
       {/* ── Elecciones de clase ─────────────────────────────────────────── */}
-      {d.choices.map(({ group, max, chosen }) => (
+      {/* Las que se pagan con una reserva ya salen colgando de ella, arriba:
+          repetirlas aquí solo alargaría la pantalla. */}
+      {d.choices
+        .filter(({ group }) => !d.resources.some((r) => r.id === group.resourceId))
+        .map(({ group, max, chosen }) => (
         <Plate key={group.id} title={group.label} count={`${chosen.length} de ${max}`}>
           <p className="field-hint" style={{ marginTop: 0, marginBottom: 12 }}>{group.hint}</p>
           {chosen.length === 0 ? (
@@ -72,7 +77,7 @@ export default function FeaturesTab() {
             })
           )}
         </Plate>
-      ))}
+        ))}
 
       {/* ── Linaje ──────────────────────────────────────────────────────── */}
       <Plate title={`Rasgos de ${d.race.name.toLowerCase()}`} count={d.ancestry?.name ?? d.subrace?.name}>

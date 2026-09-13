@@ -281,18 +281,20 @@ export default function SheetTab() {
         </p>
         <div className="chips" style={{ marginBottom: 14 }}>
           {classSkills.map((sk) => (
-            <button key={sk.key} className={`chip ${c.skillProfs.includes(sk.key) ? 'on' : ''}`}
+            <button key={sk.key} className={`chip chip-skill ${c.skillProfs.includes(sk.key) ? 'on' : ''}`}
               aria-pressed={c.skillProfs.includes(sk.key)} onClick={() => s.toggleSkill(sk.key)}>
               {sk.name}
+              <span className="chip-en">{sk.en}</span>
             </button>
           ))}
         </div>
         <p className="tiny" style={{ marginBottom: 8 }}>Fuera de la lista de clase</p>
         <div className="chips">
           {otherSkills.map((sk) => (
-            <button key={sk.key} className={`chip ${c.skillProfs.includes(sk.key) ? 'on' : ''}`}
+            <button key={sk.key} className={`chip chip-skill ${c.skillProfs.includes(sk.key) ? 'on' : ''}`}
               aria-pressed={c.skillProfs.includes(sk.key)} onClick={() => s.toggleSkill(sk.key)}>
               {sk.name}
+              <span className="chip-en">{sk.en}</span>
             </button>
           ))}
         </div>
@@ -340,9 +342,10 @@ export default function SheetTab() {
                 if (!sk) return null
                 const on = c.expertise.includes(key)
                 return (
-                  <button key={key} className={`chip ${on ? 'on' : ''}`} disabled={!on && expertiseFull}
+                  <button key={key} className={`chip chip-skill ${on ? 'on' : ''}`} disabled={!on && expertiseFull}
                     aria-pressed={on} onClick={() => s.toggleExpertise(key)}>
                     {sk.name}
+                    <span className="chip-en">{sk.en}</span>
                   </button>
                 )
               })}

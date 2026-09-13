@@ -1,4 +1,5 @@
 import { chromium } from 'playwright-core'
+import { PESTANAS } from './serve.mjs'
 import { copyFileSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -31,7 +32,7 @@ p.on('requestfailed', (r) => {
 console.log('\nAbrir el archivo suelto desde el sistema de archivos')
 await p.goto(F, { waitUntil: 'networkidle' })
 await p.waitForTimeout(1500)
-check('la app arranca', await p.locator('.nav-btn').count() === 6)
+check('la app arranca', await p.locator('.nav-btn').count() === PESTANAS)
 check('con el personaje de ejemplo', has(await p.locator('.topbar-name').innerText(), 'Âreen Velthar'))
 check('y su retrato incrustado', await p.evaluate(() => (document.querySelector('.portrait-wrap img')?.naturalWidth ?? 0) > 0))
 check('el origen es un archivo local', await p.evaluate(() => location.protocol) === 'file:')
@@ -42,7 +43,7 @@ await p.waitForTimeout(400)
 await p.locator('.hp-input').fill('6')
 await p.getByRole('button', { name: 'Recibir daño' }).click()
 await p.waitForTimeout(500)
-await p.locator('.nav-btn').nth(4).click()
+await p.getByRole('tab', { name: 'Diario' }).click()
 await p.waitForTimeout(500)
 await p.locator('.plate').filter({ has: p.locator('.eyebrow', { hasText: 'Notas' }) })
   .getByRole('button', { name: 'Nueva nota' }).click()
@@ -53,7 +54,7 @@ await p.waitForTimeout(600)
 await p.reload({ waitUntil: 'networkidle' })
 await p.waitForTimeout(1800)
 check('la ficha sobrevive a cerrar y abrir', has(await p.locator('.topbar-sub').innerText(), '19/25'))
-await p.locator('.nav-btn').nth(4).click()
+await p.getByRole('tab', { name: 'Diario' }).click()
 await p.waitForTimeout(600)
 check('la nota también', has(await p.locator('body').innerText(), 'Funciona sin servidor'))
 
@@ -72,7 +73,7 @@ console.log('\nSin internet en ningún momento')
 await ctx.setOffline(true)
 await p.reload({ waitUntil: 'domcontentloaded' })
 await p.waitForTimeout(1800)
-check('sigue arrancando con la red cortada', await p.locator('.nav-btn').count() === 6)
+check('sigue arrancando con la red cortada', await p.locator('.nav-btn').count() === PESTANAS)
 check('y la ficha sigue ahí', has(await p.locator('.topbar-sub').innerText(), '19/25'))
 await p.screenshot({ path: 'tests/screenshots/standalone.png' })
 await ctx.setOffline(false)

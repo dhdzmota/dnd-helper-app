@@ -56,7 +56,7 @@ export function Tally({
 
 /** One spendable resource: a tally of uses, or a numeric pool with spend buttons. */
 export function Resource({
-  name, detail, recharge, kind, max, spent, onSet, poolSteps = [1, 5, 10],
+  name, detail, recharge, kind, max, spent, onSet, poolSteps = [1, 5, 10], opciones = [],
 }: {
   name: string
   detail?: string
@@ -66,6 +66,8 @@ export function Resource({
   spent: number
   onSet: (next: number) => void
   poolSteps?: number[]
+  /** Lo que se puede hacer con esta reserva: efectos del juramento, metamagia… */
+  opciones?: { name: string; text: string }[]
 }) {
   const left = max - spent
   return (
@@ -75,6 +77,18 @@ export function Resource({
         <span className="recharge">{recharge === 'short' ? 'Descanso corto' : 'Descanso largo'}</span>
       </div>
       {detail && <p className="resource-detail">{detail}</p>}
+
+      {/* Saber cuántos usos quedan no sirve de nada si no sabes en qué gastarlos. */}
+      {opciones.length > 0 && (
+        <ul className="res-opciones">
+          {opciones.map((o) => (
+            <li key={o.name}>
+              <span className="res-opcion-nombre">{o.name}</span>
+              <span className="res-opcion-texto">{o.text}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {kind === 'pool' ? (
         <>
@@ -189,6 +203,13 @@ export const ICONS = {
       <path d="M4 4.5A1.5 1.5 0 015.5 3H18a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5v-14z" />
       <path d="M4 17.5A1.5 1.5 0 015.5 16H19" />
       <path d="M8 7.5h7M8 11h5" />
+    </svg>
+  ),
+  gear: (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...P}>
+      <path d="M9 7V5.5A2.5 2.5 0 0111.5 3h1A2.5 2.5 0 0115 5.5V7" />
+      <path d="M5 7h14l-1 12.5a1.5 1.5 0 01-1.5 1.4h-11A1.5 1.5 0 014 19.5L3 7z" />
+      <path d="M9.5 11.5v2M14.5 11.5v2" />
     </svg>
   ),
   sheet: (

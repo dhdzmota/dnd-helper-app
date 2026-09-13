@@ -1,5 +1,5 @@
 import { chromium } from 'playwright-core'
-import { preview } from './serve.mjs'
+import { PESTANAS, preview } from './serve.mjs'
 
 /** ¿Sobrevive la app a quedarse sin señal en mitad de la partida? */
 const { url, stop: stopPreview } = await preview()
@@ -33,7 +33,7 @@ await ctx.setOffline(true)
 await p.reload({ waitUntil: 'domcontentloaded' })
 await p.waitForTimeout(1800)
 
-check('la app arranca sin conexión', await p.locator('.nav-btn').count() === 6)
+check('la app arranca sin conexión', await p.locator('.nav-btn').count() === PESTANAS)
 check('y la ficha conserva el daño recibido', (await p.locator('.hp-cur').innerText()) === '16')
 
 // El retrato vive en la pestaña Héroe, que hasta ahora no se había abierto.
@@ -61,7 +61,7 @@ await q.waitForTimeout(500)
 await fresh.setOffline(true)
 await q.goto(`${url}?primera=1#hero`, { waitUntil: 'domcontentloaded' })
 await q.waitForTimeout(1500)
-check('arranca sin haber vuelto a conectarse', await q.locator('.nav-btn').count() === 6)
+check('arranca sin haber vuelto a conectarse', await q.locator('.nav-btn').count() === PESTANAS)
 check('con el retrato ya precargado', await q.evaluate(() => (document.querySelector('.portrait-wrap img')?.naturalWidth ?? 0) > 0))
 await q.locator('.nav-btn').nth(2).click()
 await q.waitForTimeout(500)

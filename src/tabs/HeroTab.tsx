@@ -84,17 +84,38 @@ export default function HeroTab() {
         )}
       </Plate>
 
+      {/*
+        Agrupadas por característica y alfabéticas dentro de cada grupo: en la mesa
+        el DM pide «una tirada de Destreza» y así están todas juntas. Debajo de cada
+        nombre va el inglés, porque la mitad de las mesas lo pide en inglés.
+      */}
       <Plate title="Habilidades" count={`${d.skills.filter((s) => s.proficient).length} competencias`}>
-        <div className="rows">
-          {d.skills.map((s) => (
-            <div key={s.key} className={`row ${s.proficient ? 'is-prof' : ''}`}>
-              <span className={`pip-prof ${s.expertise ? 'expert' : s.proficient ? 'on' : ''}`} aria-hidden="true" />
-              <span className="row-name">{s.name}</span>
-              <span className="row-ability">{ABILITY_INFO[s.ability].short}</span>
-              <span className="row-mod">{signed(s.mod)}</span>
+        {ABILITIES.map((a) => {
+          const grupo = d.skills
+            .filter((s) => s.ability === a)
+            .sort((x, y) => x.name.localeCompare(y.name, 'es'))
+          if (grupo.length === 0) return null
+          return (
+            <div key={a} className="skill-group">
+              <p className="skill-group-title">
+                {ABILITY_INFO[a].name}
+                <span>{ABILITY_INFO[a].en}</span>
+              </p>
+              <div className="rows">
+                {grupo.map((s) => (
+                  <div key={s.key} className={`row row-skill ${s.proficient ? 'is-prof' : ''}`}>
+                    <span className={`pip-prof ${s.expertise ? 'expert' : s.proficient ? 'on' : ''}`} aria-hidden="true" />
+                    <span className="row-name">
+                      {s.name}
+                      <span className="row-en">{s.en}</span>
+                    </span>
+                    <span className="row-mod">{signed(s.mod)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
       </Plate>
     </>
   )
